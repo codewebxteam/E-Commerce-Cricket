@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // --- Products ---
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isLoggedIn();
+      
+      match /reviews/{reviewId} {
+        allow read: if true;
+        allow create: if isLoggedIn();
+        allow update, delete: if isLoggedIn() && resource.data.userId == request.auth.uid;
+      }
+    }
+    
+    // --- Users Collection ---
+    match /users/{userId} {
+      // Allow read to all logged in users (needed for Admin Analytics to count users)
+      allow read: if isLoggedIn(); 
+      // Only owner can write to their profile
+      allow write: if isOwner(userId);
+      
+      // Subcollections: OWNER ONLY
+      match /cart/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /wishlist/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+      match /orders/{orderId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // --- Global Orders (for Admin) ---
+    match /orders/{orderId} {
+      allow read, write: if isLoggedIn();
+    }
+    
+    // --- Abandoned Carts ---
+    match /abandonedCarts/{userId} {
+      allow write: if isOwner(userId);
+    }
+  }
+}
