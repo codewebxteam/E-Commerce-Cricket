@@ -18,12 +18,23 @@ export const CartProvider = ({ children }) => {
   const { currentUser } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isGuestCartLoaded, setIsGuestCartLoaded] = useState(false);
 
   /* 🔥 REAL-TIME CART */
   useEffect(() => {
     if (!currentUser) {
       const guest = localStorage.getItem("guest-cart");
-      setCartItems(guest ? JSON.parse(guest) : []);
+      if (guest) {
+        try {
+            setCartItems(JSON.parse(guest));
+        } catch (e) {
+            console.error("Failed to parse guest cart", e);
+            setCartItems([]);
+        }
+      } else {
+        setCartItems([]);
+      }
+      setIsGuestCartLoaded(true);
       setLoading(false);
       return;
     }
@@ -44,23 +55,25 @@ export const CartProvider = ({ children }) => {
 
   /* 💾 SAVE GUEST CART */
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser && isGuestCartLoaded) {
       localStorage.setItem("guest-cart", JSON.stringify(cartItems));
     }
-  }, [cartItems, currentUser]);
+  }, [cartItems, currentUser, isGuestCartLoaded]);
 
   /* 🔄 MERGE GUEST CART AFTER LOGIN */
   useEffect(() => {
     if (!currentUser) return;
 
     const mergeGuestCart = async () => {
-      const guest = JSON.parse(localStorage.getItem("guest-cart") || "[]");
+      const guestStr = localStorage.getItem("guest-cart");
+      const guest = guestStr ? JSON.parse(guestStr) : [];
 
-      for (const item of guest) {
-        await addToCart(item, item.quantity);
+      if (guest.length > 0) {
+          for (const item of guest) {
+            await addToCart(item, item.quantity);
+          }
+          localStorage.removeItem("guest-cart");
       }
-
-      localStorage.removeItem("guest-cart");
     };
 
     mergeGuestCart();
@@ -68,7 +81,30 @@ export const CartProvider = ({ children }) => {
 
   /* ➕ ADD / INCREMENT */
   const addToCart = async (product, qty = 1) => {
-    if (!currentUser || !product?.id) {
+    if (!currentUser) {
+        // Handle Guest Add
+        setCartItems(prev => {
+            const existing = prev.find(p => p.productId === product.id || p.id === product.id);
+            if (existing) {
+                return prev.map(p => (p.productId === product.id || p.id === product.id)
+                    ? { ...p, quantity: p.quantity + qty }
+                    : p
+                );
+            }
+            return [...prev, {
+                id: product.id,
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image || product.images?.[0] || "",
+                quantity: qty,
+                updatedAt: new Date().toISOString()
+            }];
+        });
+        return;
+    }
+
+    if (!product?.id) {
       console.warn("addToCart: Missing user or product ID", { currentUser, product });
       return;
     }
@@ -93,14 +129,23 @@ export const CartProvider = ({ children }) => {
 
   /* ❌ REMOVE */
   const removeFromCart = async (productId) => {
-    if (!currentUser) return;
+    if (!currentUser) {
+        setCartItems(prev => prev.filter(item => item.id !== productId && item.productId !== productId));
+        return;
+    }
     await deleteDoc(doc(db, "users", currentUser.uid, "cart", productId));
   };
 
   /* 🔁 UPDATE QTY */
   const updateQuantity = async (productId, quantity) => {
-    if (!currentUser) return;
     if (quantity <= 0) return removeFromCart(productId);
+
+    if (!currentUser) {
+        setCartItems(prev => prev.map(item =>
+            (item.id === productId || item.productId === productId) ? { ...item, quantity } : item
+        ));
+        return;
+    }
 
     await setDoc(
       doc(db, "users", currentUser.uid, "cart", productId),
@@ -111,7 +156,10 @@ export const CartProvider = ({ children }) => {
 
   /* 🧹 CLEAR */
   const clearCart = async () => {
-    if (!currentUser) return;
+    if (!currentUser) {
+        setCartItems([]);
+        return;
+    }
     await Promise.all(
       cartItems.map((item) =>
         deleteDoc(doc(db, "users", currentUser.uid, "cart", item.id))

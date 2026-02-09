@@ -86,9 +86,6 @@ const ProductCard = ({ product }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
       className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-2xl hover:shadow-blue-200/50 transition-all duration-500 flex flex-col h-full cursor-pointer"
       onClick={() => navigate(`/product/${product.id}`)}
     >
@@ -98,6 +95,10 @@ const ProductCard = ({ product }) => {
           <motion.img
             src={getDirectImageUrl(product.image || product.images?.[0])}
             alt={product.name}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://placehold.co/600x400?text=Image+Unavailable";
+            }}
             className="max-w-full h-auto min-h-[200px] max-h-[300px] object-contain transition-transform duration-700 group-hover:scale-110"
           />
         </div>

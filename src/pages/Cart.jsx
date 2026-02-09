@@ -11,6 +11,8 @@ import {
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { getDirectImageUrl } from "../utils/imageUtils";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../firebase/config";
 
 const Cart = () => {
   const {
@@ -56,23 +58,52 @@ const Cart = () => {
     ? (subtotal * appliedCoupon.discount) / 100
     : 0;
 
+  // The client requested NOT to show "Order Summary me final money" in cart.
+  // We keep the calculation for logic but will hide it in UI.
   const finalTotal = subtotal + shipping - couponDiscount;
 
   /* -------------------- HANDLERS -------------------- */
-  const handleApplyCoupon = () => {
-    // Demo coupons
-    const coupons = {
-      RINKU35: { discount: 10, name: "10% Off (God's Plan)" },
-      WELCOME20: { discount: 20, name: "20% Welcome Discount" },
-      CRICKET10: { discount: 10, name: "10% Cricket Gear" },
-    };
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
 
-    if (coupons[couponCode.toUpperCase()]) {
-      setAppliedCoupon(coupons[couponCode.toUpperCase()]);
-      toast.success("Coupon Applied Successfully!");
-    } else {
-      toast.error("Invalid coupon code");
-      setAppliedCoupon(null);
+    try {
+      const q = query(
+        collection(db, "coupons"),
+        where("code", "==", couponCode.toUpperCase()),
+        where("isActive", "==", true)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const couponData = querySnapshot.docs[0].data();
+        setAppliedCoupon({
+          ...couponData,
+          id: querySnapshot.docs[0].id
+        });
+        toast.success("Coupon Applied Successfully!");
+      } else {
+        // Fallback to hardcoded for demo if needed, or just error
+        // Keeping legacy hardcoded for compatibility if DB empty:
+        const demoCoupons = {
+          RINKU35: { discount: 10, name: "10% Off (God's Plan)" },
+          WELCOME20: { discount: 20, name: "20% Welcome Discount" },
+          CRICKET10: { discount: 10, name: "10% Cricket Gear" },
+        };
+
+        if (demoCoupons[couponCode.toUpperCase()]) {
+          setAppliedCoupon(demoCoupons[couponCode.toUpperCase()]);
+          toast.success("Coupon Applied Successfully!");
+        } else {
+          toast.error("Invalid coupon code");
+          setAppliedCoupon(null);
+        }
+      }
+    } catch (error) {
+      console.error("Error applying coupon:", error);
+      toast.error("Failed to apply coupon");
     }
   };
 
@@ -193,12 +224,16 @@ const Cart = () => {
 
                 <div className="h-px bg-gray-100 my-4"></div>
 
-                <div className="flex justify-between items-end">
+                {/* HIDDEN TOTAL AS REQUESTED */}
+                {/* <div className="flex justify-between items-end">
                   <span className="font-bold text-lg text-gray-900">Total</span>
                   <div className="text-right">
                     <span className="block text-3xl font-extrabold text-gray-900">₹{finalTotal.toLocaleString()}</span>
                     <span className="text-xs text-gray-400">Tax included</span>
                   </div>
+                </div> */}
+                <div className="text-center text-sm text-gray-500 italic">
+                  Total will be calculated at checkout
                 </div>
               </div>
 
@@ -252,6 +287,12 @@ const EmptyCart = () => (
 );
 
 const CartItem = ({ item, updateQuantity, removeFromCart }) => {
+  const handleRemove = (id) => {
+    if (window.confirm("Are you sure you want to remove this item from your cart?")) {
+      removeFromCart(id);
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -261,21 +302,25 @@ const CartItem = ({ item, updateQuantity, removeFromCart }) => {
       className="bg-white p-4 sm:p-6 rounded-3xl shadow-[0_2px_20px_rgb(0,0,0,0.04)] border border-gray-100 flex gap-6 group hover:border-gray-200 transition-colors"
     >
       <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
-        <img
-          src={getDirectImageUrl(item.image)}
-          alt={item.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        <Link to={`/product/${item.productId || item.id}`}>
+          <img
+            src={getDirectImageUrl(item.image)}
+            alt={item.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+          />
+        </Link>
       </div>
 
       <div className="flex-1 flex flex-col justify-between py-1">
         <div>
           <div className="flex justify-between items-start">
-            <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2 pr-4">
-              {item.name}
-            </h3>
+            <Link to={`/product/${item.productId || item.id}`} className="flex-1 pr-4">
+              <h3 className="font-bold text-gray-900 text-lg leading-tight line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
+                {item.name}
+              </h3>
+            </Link>
             <button
-              onClick={() => removeFromCart(item.id)}
+              onClick={() => handleRemove(item.id)}
               className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-all"
             >
               <TrashIcon className="h-5 w-5" />

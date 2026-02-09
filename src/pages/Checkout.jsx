@@ -38,7 +38,7 @@ const Checkout = () => {
   });
 
   const [shippingMethod, setShippingMethod] = useState("standard"); // standard | express
-  const [paymentMethod, setPaymentMethod] = useState("cod"); // cod | upi | card
+  const [paymentMethod, setPaymentMethod] = useState("upi"); // cod | upi | card
 
   const shippingCost = shippingMethod === "express" ? 150 : 0;
   const finalTotal = activeSubtotal + shippingCost;
@@ -267,8 +267,8 @@ const Checkout = () => {
               <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">3</span>
               Payment Method
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {['cod', 'upi', 'card'].map(method => (
+            <div className="grid grid-cols-1 gap-3">
+              {['upi'].map(method => (
                 <label key={method} className={`flex flex-col items-center justify-center p-4 border rounded-xl cursor-pointer hover:bg-gray-50 transition ${paymentMethod === method ? 'border-blue-600 bg-blue-50 ring-1 ring-blue-600' : 'border-gray-200'}`}>
                   <input
                     type="radio"

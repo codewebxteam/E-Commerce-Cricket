@@ -5,10 +5,12 @@ import {
   UsersIcon,
   ChartBarIcon,
   ArrowRightOnRectangleIcon,
+  TicketIcon,
 } from "@heroicons/react/24/outline";
 import ProductManager from "./ProductManager";
 import OrderManager from "./OrderManager";
 import AdminAnalytics from "./AdminAnalytics";
+import CouponManager from "./CouponManager";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -42,6 +44,12 @@ const Dashboard = () => {
             onClick={() => setActiveTab("orders")}
           />
           <MenuItem
+            icon={<TicketIcon className="h-5 w-5" />}
+            label="Coupons"
+            active={activeTab === "coupons"}
+            onClick={() => setActiveTab("coupons")}
+          />
+          <MenuItem
             icon={<UsersIcon className="h-5 w-5" />}
             label="Users"
             active={activeTab === "users"}
@@ -70,6 +78,7 @@ const Dashboard = () => {
         {activeTab === "orders" && <OrderManager />}
         {activeTab === "analytics" && <AdminAnalytics />}
         {activeTab === "users" && <UsersPanel />}
+        {activeTab === "coupons" && <CouponManager />}
       </main>
     </div>
   );
@@ -78,11 +87,10 @@ const Dashboard = () => {
 const MenuItem = ({ icon, label, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left ${
-      active
+    className={`flex items-center gap-3 px-4 py-2 rounded-lg w-full text-left ${active
         ? "bg-blue-600 text-white"
         : "hover:bg-gray-100 text-gray-700"
-    }`}
+      }`}
   >
     {icon}
     {label}

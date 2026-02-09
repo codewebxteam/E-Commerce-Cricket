@@ -100,6 +100,10 @@ const ProductCard = ({ product }) => (
         <img
           src={getDirectImageUrl(product.image || product.images?.[0])}
           alt={product.name}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "https://placehold.co/600x400?text=Image+Unavailable";
+          }}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border border-gray-100">
