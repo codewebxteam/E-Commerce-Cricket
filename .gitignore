@@ -13,6 +13,8 @@ dist-ssr
 *.local
 
 .env
+build_log.txt
+build_output.txt
 
 # Editor directories and files
 .vscode/*
