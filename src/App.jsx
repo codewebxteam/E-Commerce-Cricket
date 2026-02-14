@@ -20,7 +20,10 @@ import Checkout from "./pages/Checkout";
 import OrderSuccess from "./pages/OrderSuccess";
 import OrderHistory from "./pages/OrderHistory";
 import Profile from "./pages/Profile";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import AdminDashboard from "./pages/admin/Dashboard";
+import AdminUserProfile from "./pages/admin/AdminUserProfile";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { ToastProvider } from "./components/ToastProvider";
@@ -55,6 +58,8 @@ function App() {
                 <Route path="/products/category/:category" element={<Products />} />
                 <Route path="/trophies" element={<Trophies />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
 
                 <Route
                   path="/cart"
@@ -110,6 +115,14 @@ function App() {
                   element={
                     <ProtectedRoute adminOnly>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users/:uid"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminUserProfile />
                     </ProtectedRoute>
                   }
                 />

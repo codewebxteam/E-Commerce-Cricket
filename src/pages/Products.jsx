@@ -285,7 +285,9 @@ const Products = () => {
           </div>
         ) : (
           <>
-            <ProductGrid products={paginatedProducts} />
+            <div className="h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+              <ProductGrid products={paginatedProducts} />
+            </div>
 
             {/* PAGINATION */}
             {totalPages > 1 && (

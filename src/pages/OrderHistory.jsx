@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, query, orderBy, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -13,22 +13,20 @@ const OrderHistory = () => {
     useEffect(() => {
         if (!currentUser) return;
 
-        const fetchOrders = async () => {
-            try {
-                const q = query(
-                    collection(db, "users", currentUser.uid, "orders"),
-                    orderBy("createdAt", "desc")
-                );
-                const snap = await getDocs(q);
-                setOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-            } catch (error) {
-                console.error("Error fetching orders:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+        const q = query(
+            collection(db, "users", currentUser.uid, "orders"),
+            orderBy("createdAt", "desc")
+        );
 
-        fetchOrders();
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setOrders(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching orders:", error);
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
     }, [currentUser]);
 
     if (loading) {
@@ -93,6 +91,23 @@ const OrderHistory = () => {
                                 <p className="text-xs text-gray-400 font-mono">#{order.orderId ? order.orderId.slice(0, 8) : order.id.slice(0, 8)}</p>
                             </div>
                         </div>
+
+                        {/* Tracking Info if Shipped */}
+                        {order.status === 'shipped' && order.deliveryPartner && (
+                            <div className="px-6 py-3 bg-indigo-50/50 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <TruckIcon className="h-5 w-5 text-indigo-600" />
+                                    <div>
+                                        <p className="text-xs font-bold text-indigo-500 uppercase">Shipped via</p>
+                                        <p className="font-bold text-indigo-900 text-sm">{order.deliveryPartner}</p>
+                                    </div>
+                                </div>
+                                <div className="sm:text-right">
+                                    <p className="text-xs font-bold text-indigo-500 uppercase">Tracking ID</p>
+                                    <p className="font-mono font-bold text-indigo-900 text-sm">{order.awbId}</p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* SHIPPING ADDRESS */}
                         {order.shippingAddress && (

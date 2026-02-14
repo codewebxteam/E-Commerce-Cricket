@@ -77,18 +77,6 @@ const Profile = () => {
         </div>
     );
 
-    const InputGroup = ({ label, icon, children, isTextArea }) => (
-        <div className="space-y-1">
-            <label className="block text-sm font-semibold text-gray-700">{label}</label>
-            <div className="relative rounded-md shadow-sm">
-                <div className={`absolute left-0 pl-3 flex pointer-events-none text-gray-400 ${isTextArea ? 'top-3' : 'inset-y-0 items-center'}`}>
-                    {icon}
-                </div>
-                {children}
-            </div>
-        </div>
-    );
-
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
@@ -113,7 +101,7 @@ const Profile = () => {
                                         type="text"
                                         className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors py-2.5 bg-white border text-gray-900 font-medium"
                                         value={formData.displayName}
-                                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, displayName: e.target.value }))}
                                         placeholder="Enter your name"
                                     />
                                 </InputGroup>
@@ -123,7 +111,7 @@ const Profile = () => {
                                         type="tel"
                                         className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 transition-colors py-2.5 bg-white border text-gray-900 font-medium"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                                         placeholder="+91..."
                                     />
                                 </InputGroup>
@@ -160,7 +148,7 @@ const Profile = () => {
                                         <input
                                             className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2.5 bg-white border text-gray-900 font-medium"
                                             value={formData.address.fullName}
-                                            onChange={(e) => setFormData({ ...formData, address: { ...formData.address, fullName: e.target.value } })}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, fullName: e.target.value } }))}
                                             placeholder="John Doe"
                                         />
                                     </InputGroup>
@@ -169,7 +157,7 @@ const Profile = () => {
                                         <input
                                             className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2.5 bg-white border text-gray-900 font-medium"
                                             value={formData.address.phone}
-                                            onChange={(e) => setFormData({ ...formData, address: { ...formData.address, phone: e.target.value } })}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, phone: e.target.value } }))}
                                             placeholder="Mobile Number"
                                         />
                                     </InputGroup>
@@ -178,7 +166,7 @@ const Profile = () => {
                                         <input
                                             className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2.5 bg-white border text-gray-900 font-medium"
                                             value={formData.address.pincode}
-                                            onChange={(e) => setFormData({ ...formData, address: { ...formData.address, pincode: e.target.value } })}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, pincode: e.target.value } }))}
                                             placeholder="123456"
                                         />
                                     </InputGroup>
@@ -187,7 +175,7 @@ const Profile = () => {
                                         <input
                                             className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2.5 bg-white border text-gray-900 font-medium"
                                             value={formData.address.city}
-                                            onChange={(e) => setFormData({ ...formData, address: { ...formData.address, city: e.target.value } })}
+                                            onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))}
                                             placeholder="New York"
                                         />
                                     </InputGroup>
@@ -197,7 +185,7 @@ const Profile = () => {
                                             <textarea
                                                 className="pl-10 block w-full border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 py-2.5 bg-white border min-h-[100px] text-gray-900 font-medium"
                                                 value={formData.address.addressLine}
-                                                onChange={(e) => setFormData({ ...formData, address: { ...formData.address, addressLine: e.target.value } })}
+                                                onChange={(e) => setFormData(prev => ({ ...prev, address: { ...prev.address, addressLine: e.target.value } }))}
                                                 placeholder="House No., Building Name, Street, Area"
                                             />
                                         </InputGroup>
@@ -230,5 +218,17 @@ const Profile = () => {
         </div>
     );
 };
+
+const InputGroup = ({ label, icon, children, isTextArea }) => (
+    <div className="space-y-1">
+        <label className="block text-sm font-semibold text-gray-700">{label}</label>
+        <div className="relative rounded-md shadow-sm">
+            <div className={`absolute left-0 pl-3 flex pointer-events-none text-gray-400 ${isTextArea ? 'top-3' : 'inset-y-0 items-center'}`}>
+                {icon}
+            </div>
+            {children}
+        </div>
+    </div>
+);
 
 export default Profile;

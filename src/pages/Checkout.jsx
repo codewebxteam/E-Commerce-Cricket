@@ -43,6 +43,11 @@ const Checkout = () => {
   const shippingCost = shippingMethod === "express" ? 150 : 0;
   const finalTotal = activeSubtotal + shippingCost;
 
+  // Coupon State
+  const [couponCode, setCouponCode] = useState("");
+  const [isCouponApplied, setIsCouponApplied] = useState(false);
+  const [discount, setDiscount] = useState(0);
+
   useEffect(() => {
     if (itemsToPurchase.length === 0) {
       navigate("/products");
@@ -71,6 +76,30 @@ const Checkout = () => {
     fetchUser();
   }, [currentUser]);
 
+  const handleApplyCoupon = () => {
+    if (!couponCode.trim()) {
+      toast.error("Please enter a coupon code");
+      return;
+    }
+
+    // Mock Coupon Logic - In real app, verify with backend
+    if (couponCode.toUpperCase() === "WELCOME500") {
+      setDiscount(500);
+      setIsCouponApplied(true);
+      toast.success("Coupon WELCOME500 applied!");
+    } else if (couponCode.toUpperCase() === "CRICKET10") {
+      // Calculate 10% of subtotal
+      const disc = Math.round(activeSubtotal * 0.1);
+      setDiscount(disc);
+      setIsCouponApplied(true);
+      toast.success("10% Discount Applied!");
+    } else {
+      toast.error("Invalid Coupon Code");
+      setDiscount(0);
+      setIsCouponApplied(false);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!currentUser) return;
 
@@ -89,6 +118,9 @@ const Checkout = () => {
       // Use Transaction for Stock Update and Order Creation
       const orderRef = await runTransaction(db, async (transaction) => {
         let validatedItems = [];
+
+        // Calculate final amount inside transaction to be safe (or just use state for now)
+        const orderTotal = finalTotal - discount;
 
         // 1. Check and Update Stock for each item
         for (const item of itemsToPurchase) {
@@ -130,7 +162,9 @@ const Checkout = () => {
           shippingMethod,
           subtotal: activeSubtotal,
           shippingCost,
-          totalAmount: finalTotal,
+          discount: discount,
+          couponCode: isCouponApplied ? couponCode : null,
+          totalAmount: finalTotal - discount,
           status: "pending",
           createdAt: serverTimestamp(),
         };
@@ -288,6 +322,51 @@ const Checkout = () => {
         {/* RIGHT COLUMN - SUMMARY */}
         <div className="lg:col-span-4">
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
+
+            {/* Coupon Section */}
+            <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 text-sm uppercase">
+                <span className="text-blue-600">🎟️</span> Apply Coupon
+              </h3>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  placeholder="Enter code"
+                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none uppercase font-bold text-gray-700"
+                  disabled={isCouponApplied}
+                />
+                {isCouponApplied ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsCouponApplied(false);
+                      setCouponCode("");
+                      setDiscount(0);
+                      toast.success("Coupon removed");
+                    }}
+                    className="bg-red-100 text-red-600 px-3 py-2 rounded-lg text-xs font-bold hover:bg-red-200 transition"
+                  >
+                    REMOVE
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-black transition"
+                  >
+                    APPLY
+                  </button>
+                )}
+              </div>
+              {isCouponApplied && (
+                <p className="text-xs text-green-600 font-bold mt-2 flex items-center gap-1">
+                  ✓ Coupon applied successfully!
+                </p>
+              )}
+            </div>
+
             <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
             <div className="space-y-4 mb-6 max-h-60 overflow-y-auto pr-2">
@@ -314,9 +393,17 @@ const Checkout = () => {
                 <span>Shipping</span>
                 <span>{shippingCost === 0 ? <span className="text-green-600">Free</span> : `₹${shippingCost}`}</span>
               </div>
+
+              {isCouponApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Discount ({couponCode})</span>
+                  <span>-₹{discount}</span>
+                </div>
+              )}
+
               <div className="flex justify-between font-bold text-xl text-gray-900 pt-3 border-t border-gray-100">
                 <span>Total</span>
-                <span>₹{finalTotal}</span>
+                <span>₹{finalTotal - discount}</span>
               </div>
             </div>
 
@@ -325,7 +412,7 @@ const Checkout = () => {
               disabled={loading}
               className="w-full mt-8 bg-black text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "Processing..." : `Place Order • ₹${finalTotal}`}
+              {loading ? "Processing..." : `Place Order • ₹${finalTotal - discount}`}
             </button>
 
             <p className="text-xs text-center text-gray-400 mt-4">

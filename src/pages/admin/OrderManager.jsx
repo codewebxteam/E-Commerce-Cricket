@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { collection, query, orderBy, getDocs, updateDoc, doc, where } from "firebase/firestore";
+import { collection, query, orderBy, getDocs, updateDoc, doc, where, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import toast from "react-hot-toast";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 const OrderManager = () => {
   const [orders, setOrders] = useState([]);
@@ -9,6 +10,15 @@ const OrderManager = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrder, setExpandedOrder] = useState(null);
+
+  // Modal State for Shipping
+  const [showShipModal, setShowShipModal] = useState(false);
+  const [shippingData, setShippingData] = useState({
+    orderId: null,
+    deliveryPartner: "",
+    awbId: ""
+  });
+
   const ORDERS_PER_PAGE = 10;
 
   const fetchOrders = async () => {
@@ -20,6 +30,7 @@ const OrderManager = () => {
       console.error("Error fetching orders:", error);
     } finally {
       setLoading(false);
+
     }
   };
 
@@ -27,39 +38,69 @@ const OrderManager = () => {
     fetchOrders();
   }, []);
 
-  const handleStatusUpdate = async (orderId, newStatus) => {
+  const initiateStatusUpdate = (orderId, newStatus) => {
+    if (newStatus === "shipped") {
+      setShippingData({ orderId, deliveryPartner: "Delhivery", awbId: "" });
+      setShowShipModal(true);
+    } else {
+      updateOrderStatus(orderId, newStatus);
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus, additionalData = {}) => {
     if (!window.confirm(`Update status to ${newStatus}?`)) return;
 
     try {
-      // Find the order to get userId
       const order = orders.find(o => o.id === orderId);
       if (!order) return;
 
+      const batch = writeBatch(db);
+
       // 1. Update global order
-      await updateDoc(doc(db, "orders", orderId), { status: newStatus });
+      const orderRef = doc(db, "orders", orderId);
+      batch.update(orderRef, {
+        status: newStatus,
+        ...additionalData,
+        ...(newStatus === "shipped" ? { shippedAt: new Date() } : {})
+      });
 
       // 2. Sync to user's order copy
       if (order.userId) {
-        try {
-          const userOrdersRef = collection(db, "users", order.userId, "orders");
-          const userOrderQuery = query(userOrdersRef, where("orderId", "==", orderId));
-          const userOrderSnap = await getDocs(userOrderQuery);
+        const userOrdersRef = collection(db, "users", order.userId, "orders");
+        const userOrderQuery = query(userOrdersRef, where("orderId", "==", orderId));
+        const userOrderSnap = await getDocs(userOrderQuery);
 
-          for (const userOrderDoc of userOrderSnap.docs) {
-            await updateDoc(doc(db, "users", order.userId, "orders", userOrderDoc.id), { status: newStatus });
-          }
-        } catch (syncErr) {
-          console.warn("Could not sync user order copy:", syncErr);
-        }
+        userOrderSnap.docs.forEach((docSnap) => {
+          batch.update(docSnap.ref, {
+            status: newStatus,
+            ...additionalData,
+            ...(newStatus === "shipped" ? { shippedAt: new Date() } : {})
+          });
+        });
       }
 
+      await batch.commit();
+
       // Update local state
-      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      setOrders(orders.map(o => o.id === orderId ? { ...o, status: newStatus, ...additionalData } : o));
       toast.success(`Order status updated to ${newStatus}`);
+      setShowShipModal(false);
     } catch (error) {
       console.error("Update failed", error);
       toast.error("Failed to update status");
     }
+  };
+
+  const handleShipSubmit = (e) => {
+    e.preventDefault();
+    if (!shippingData.deliveryPartner || !shippingData.awbId) {
+      toast.error("Please fill all shipping details");
+      return;
+    }
+    updateOrderStatus(shippingData.orderId, "shipped", {
+      deliveryPartner: shippingData.deliveryPartner,
+      awbId: shippingData.awbId
+    });
   };
 
   const filteredOrders = statusFilter === "all"
@@ -79,7 +120,57 @@ const OrderManager = () => {
   }, [statusFilter]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-6 relative">
+
+      {/* SHIPPING MODAL */}
+      {showShipModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-scaleIn">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Mark as Shipped</h3>
+              <button onClick={() => setShowShipModal(false)} className="p-1 hover:bg-gray-100 rounded-lg">
+                <XMarkIcon className="w-6 h-6 text-gray-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleShipSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Delivery Partner</label>
+                <select
+                  className="w-full border border-gray-300 rounded-lg p-3 font-medium"
+                  value={shippingData.deliveryPartner}
+                  onChange={(e) => setShippingData({ ...shippingData, deliveryPartner: e.target.value })}
+                >
+                  <option value="Delhivery">Delhivery</option>
+                  <option value="BlueDart">BlueDart</option>
+                  <option value="DTDC">DTDC</option>
+                  <option value="XpressBees">XpressBees</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">AWB / Tracking ID</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-lg p-3 font-medium focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="e.g. 1234567890"
+                  value={shippingData.awbId}
+                  onChange={(e) => setShippingData({ ...shippingData, awbId: e.target.value })}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition"
+              >
+                Confirm Shipment
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
         <h1 className="text-3xl font-bold text-gray-800">Order Management</h1>
         <select
@@ -141,7 +232,7 @@ const OrderManager = () => {
                       <select
                         className="border border-gray-200 rounded px-2 py-1 text-xs font-bold text-gray-700 outline-none hover:border-gray-400 transition"
                         value={order.status}
-                        onChange={(e) => handleStatusUpdate(order.id, e.target.value)}
+                        onChange={(e) => initiateStatusUpdate(order.id, e.target.value)}
                       >
                         <option value="pending">Pending</option>
                         <option value="shipped">Shipped</option>
@@ -171,6 +262,12 @@ const OrderManager = () => {
                             <p className="text-gray-700">Payment: {order.paymentMethod?.toUpperCase()}</p>
                             <p className="text-gray-700">Shipping: {order.shippingMethod || "Standard"}</p>
                             <p className="text-gray-700">Subtotal: ₹{order.subtotal} | Shipping: ₹{order.shippingCost || 0}</p>
+                            {order.deliveryPartner && (
+                              <div className="mt-2 text-blue-800 bg-blue-100 p-2 rounded">
+                                <p className="font-bold text-xs uppercase">Shipping Info</p>
+                                <p>{order.deliveryPartner} - {order.awbId}</p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>

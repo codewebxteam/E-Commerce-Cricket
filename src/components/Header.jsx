@@ -46,10 +46,25 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isMenuOpen]);
 
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const navItems = [
     { name: "Home", path: "/" },
     { name: "Products", path: "/products" },
     { name: "Trophies", path: "/trophies" },
+    { name: "About", path: "/about" },
+    { name: "Contact", path: "/contact" },
   ];
 
   const handleLogout = async () => {
@@ -67,7 +82,11 @@ const Header = () => {
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="bg-gradient-to-tr from-blue-600 to-indigo-700 text-white p-2 rounded-lg group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-blue-200">
-              <TrophyIcon className="h-6 w-6" />
+              {location.pathname === "/trophies" ? (
+                <TrophyIcon className="h-6 w-6" />
+              ) : (
+                <ShoppingBagIcon className="h-6 w-6" />
+              )}
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-black tracking-tighter uppercase text-blue-900 leading-none">GS Sports</span>
@@ -119,7 +138,7 @@ const Header = () => {
                 </Link>
               </div>
             ) : (
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setShowProfile((p) => !p)}
                   className="flex items-center gap-2 focus:outline-none"

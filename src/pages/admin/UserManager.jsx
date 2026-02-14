@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/config";
+import { Link } from "react-router-dom";
 import { UsersIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 
@@ -152,14 +153,22 @@ const UserManager = () => {
                                                 : "N/A"}
                                     </td>
                                     <td className="p-4 text-right">
-                                        <select
-                                            value={user.role || "user"}
-                                            onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                            className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 outline-none hover:border-gray-400 transition bg-white"
-                                        >
-                                            <option value="user">User</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <Link
+                                                to={`/admin/users/${user.id}`}
+                                                className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors"
+                                            >
+                                                View Profile
+                                            </Link>
+                                            <select
+                                                value={user.role || "user"}
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                                className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs font-bold text-gray-700 outline-none hover:border-gray-400 transition bg-white"
+                                            >
+                                                <option value="user">User</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
