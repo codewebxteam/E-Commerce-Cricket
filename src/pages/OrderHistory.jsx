@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
@@ -15,12 +15,19 @@ const OrderHistory = () => {
         if (!currentUser) return;
 
         const q = query(
-            collection(db, "users", currentUser.uid, "orders"),
-            orderBy("createdAt", "desc")
+            collection(db, "orders"),
+            where("userId", "==", currentUser.uid)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
-            setOrders(snapshot.docs.map((d) => ({ id: d.id, ...d.data() })));
+            const fetchedOrders = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            // Client-side sort to avoid index requirement issues
+            fetchedOrders.sort((a, b) => {
+                const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+                const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+                return dateB - dateA;
+            });
+            setOrders(fetchedOrders);
             setLoading(false);
         }, (error) => {
             console.error("Error fetching orders:", error);

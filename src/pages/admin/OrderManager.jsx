@@ -112,16 +112,7 @@ const OrderManager = () => {
       const orderRef = doc(db, "orders", orderId);
       batch.update(orderRef, updateData);
 
-      // 2. Sync to user's order copy
-      if (order.userId) {
-        const userOrdersRef = collection(db, "users", order.userId, "orders");
-        const userOrderQuery = query(userOrdersRef, where("orderId", "==", orderId));
-        const userOrderSnap = await getDocs(userOrderQuery);
 
-        userOrderSnap.docs.forEach((docSnap) => {
-          batch.update(docSnap.ref, updateData);
-        });
-      }
 
       await batch.commit();
 
