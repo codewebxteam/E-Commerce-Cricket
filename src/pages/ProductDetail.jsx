@@ -193,8 +193,8 @@ const ProductDetail = () => {
     <div className="bg-white min-h-screen pb-20 pt-4">
       <div className="max-w-7xl mx-auto px-4">
 
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 mb-8 text-xs font-bold uppercase tracking-widest">
+        {/* Nav */}
+        <nav className="flex flex-wrap items-center gap-2 mb-8 text-xs font-bold uppercase tracking-widest">
           <Link to="/" className="text-gray-400 hover:text-blue-600 transition-colors">Home</Link>
           <ChevronRight size={12} className="text-gray-300" />
           <Link to="/products" className="text-gray-400 hover:text-blue-600 transition-colors">Products</Link>
@@ -202,15 +202,15 @@ const ProductDetail = () => {
           <span className="text-blue-600">{product.name}</span>
         </nav>
 
-        {/* Main Grid */}
+        {/* Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
 
-          {/* Left: Gallery */}
+          {/* Gallery */}
           <div className="w-full">
             <ProductImageGallery images={product.images || []} isNew={product.isNew} />
           </div>
 
-          {/* Right: Info */}
+          {/* Info */}
           <div className="flex flex-col">
             <div className="mb-6">
               <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full uppercase tracking-widest text-[10px] font-black border border-blue-100">{product.category}</span>
@@ -241,7 +241,7 @@ const ProductDetail = () => {
               {product.discount > 0 && <span className="text-green-600 text-lg font-black">{product.discount}% OFF</span>}
             </div>
 
-            {/* Stock Status */}
+            {/* Stock */}
             <div className="mb-8">
               {product.stock > 0 ? (
                 <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-2 rounded-2xl font-black text-xs uppercase tracking-widest border border-green-100">
@@ -290,7 +290,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Basic Badges */}
+            {/* Features */}
             <div className="mt-10 grid grid-cols-3 gap-4">
               <div className="flex flex-col items-center gap-2 text-center">
                 <div className="p-3 bg-gray-50 rounded-2xl text-black"><Truck size={20} /></div>
@@ -308,7 +308,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Tabbed Content Section */}
+        {/* Details */}
         <div className="border-t border-gray-100 pt-12">
           <div className="flex justify-center gap-8 mb-12">
             {['description', 'specifications', 'highlights'].map((tab) => (
@@ -376,7 +376,7 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Reviews Section */}
+        {/* Reviews */}
         <div className="mt-32 max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-black text-gray-900 tracking-tighter mb-4">VOICES OF PLAYERS</h2>
@@ -384,7 +384,7 @@ const ProductDetail = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-            {/* Review Form */}
+            {/* Write review */}
             <div className="lg:col-span-1">
               {currentUser ? (
                 <div className="bg-gray-50 rounded-3xl p-8 border border-gray-100 sticky top-24">
@@ -425,7 +425,7 @@ const ProductDetail = () => {
               )}
             </div>
 
-            {/* Review List */}
+            {/* Review list */}
             <div className="lg:col-span-2 space-y-8">
               {reviews.length > 0 ? (
                 <>
@@ -459,7 +459,7 @@ const ProductDetail = () => {
                     ))}
                   </div>
 
-                  {/* Pagination Controls */}
+                  {/* Pagination */}
                   {reviews.length > REVIEWS_PER_PAGE && (
                     <div className="flex items-center justify-between pt-8">
                       <button

@@ -9,7 +9,8 @@ import {
   Activity,
   Shield,
   Dribbble,
-  Package
+  Package,
+  Trophy
 } from "lucide-react";
 import ProductGrid from "../components/ProductGrid";
 import { db } from "../firebase/config";
@@ -42,7 +43,7 @@ const Products = () => {
     inStock: false,
   });
 
-  /* 🔥 FETCH PRODUCTS FROM FIRESTORE */
+  // Fetch products
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "products"), (snap) => {
       const list = snap.docs.map((doc) => ({
@@ -68,7 +69,7 @@ const Products = () => {
     return () => unsub();
   }, []);
 
-  /* 🔁 FILTER + SORT */
+  // Filter and sort products
   useEffect(() => {
     let list = [...products];
 
@@ -124,7 +125,7 @@ const Products = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      {/* HEADER SECTION */}
+      {/* Header */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-20">
           <motion.div
@@ -143,7 +144,7 @@ const Products = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 -mt-10 pb-20">
-        {/* INTERACTIVE CATEGORY BAR */}
+        {/* Categories */}
         <div className="bg-white p-2 rounded-3xl shadow-2xl shadow-gray-200/50 border border-gray-100 mb-12">
           <div className="flex flex-wrap md:flex-nowrap gap-2">
             <div className="flex-1 flex gap-2 overflow-x-auto p-1 pb-3 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -177,7 +178,7 @@ const Products = () => {
           </div>
         </div>
 
-        {/* TOOLS & FILTERS */}
+        {/* Toolbar */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-blue-100">
@@ -220,7 +221,7 @@ const Products = () => {
           </div>
         </div>
 
-        {/* EXPANDABLE FILTER PANEL */}
+        {/* Filter panel */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -267,7 +268,7 @@ const Products = () => {
           )}
         </AnimatePresence>
 
-        {/* PRODUCT GRID */}
+        {/* Product grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {[...Array(8)].map((_, i) => (
@@ -287,11 +288,11 @@ const Products = () => {
           </div>
         ) : (
           <>
-            <div className="h-[80vh] overflow-y-auto pr-2 custom-scrollbar">
+            <div>
               <ProductGrid products={paginatedProducts} />
             </div>
 
-            {/* PAGINATION */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center mt-12 gap-2">
                 <button

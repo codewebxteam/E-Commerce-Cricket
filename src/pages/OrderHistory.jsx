@@ -10,6 +10,8 @@ const OrderHistory = () => {
     const { currentUser } = useAuth();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
 
     useEffect(() => {
         if (!currentUser) return;
@@ -36,6 +38,12 @@ const OrderHistory = () => {
 
         return () => unsubscribe();
     }, [currentUser]);
+
+    const totalPages = Math.ceil(orders.length / ITEMS_PER_PAGE);
+    const currentOrders = orders.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
 
     if (loading) {
         return (
@@ -66,26 +74,26 @@ const OrderHistory = () => {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 py-12 min-h-screen">
-            <div className="mb-8">
-                <h1 className="text-4xl font-black text-gray-900 mb-2">My Orders</h1>
+        <div className="max-w-5xl mx-auto px-4 py-8 md:py-12 min-h-screen">
+            <div className="mb-6 md:mb-8">
+                <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">My Orders</h1>
                 <p className="text-gray-500 font-medium">{orders.length} {orders.length === 1 ? 'order' : 'orders'} placed</p>
             </div>
 
             <div className="space-y-6">
-                {orders.map((order) => (
+                {currentOrders.map((order) => (
                     <div
                         key={order.id}
                         className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group"
                     >
-                        {/* HEADER */}
-                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 p-5 flex flex-wrap gap-6 justify-between items-center border-b border-gray-200">
-                            <div className="flex gap-8 text-sm">
+                        {/* Order header */}
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/30 p-4 md:p-5 flex flex-col md:flex-row gap-4 md:items-center justify-between border-b border-gray-200">
+                            <div className="flex flex-wrap gap-4 md:gap-8 text-sm">
                                 <div className="flex items-center gap-2">
                                     <span className="text-lg">📅</span>
                                     <div>
                                         <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider">Order Placed</p>
-                                        <p className="font-bold text-gray-900">{order.createdAt?.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                        <p className="font-bold text-gray-900">{order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -95,7 +103,7 @@ const OrderHistory = () => {
                                         <p className="font-bold text-gray-900">₹{order.totalAmount?.toLocaleString('en-IN')}</p>
                                     </div>
                                 </div>
-                                <div className="hidden md:flex items-center gap-2">
+                                <div className="hidden sm:flex items-center gap-2">
                                     <span className="text-lg">📦</span>
                                     <div>
                                         <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider">Items</p>
@@ -103,24 +111,26 @@ const OrderHistory = () => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${order.status === 'delivered' ? 'bg-green-100 text-green-700 ring-1 ring-green-200' :
-                                    order.status === 'shipped' ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' :
-                                        order.status === 'accepted' ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200' :
-                                            order.status === 'cancelled' ? 'bg-red-100 text-red-700 ring-1 ring-red-200' :
-                                                'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200'
-                                    }`}>
-                                    {order.status}
-                                </span>
-                                <p className="text-[10px] text-gray-400 font-mono bg-gray-100 px-2 py-1 rounded">#{order.orderId ? order.orderId.slice(0, 8) : order.id.slice(0, 8)}</p>
+                            <div className="flex items-center justify-between w-full md:w-auto gap-3">
+                                <div className="flex items-center gap-3">
+                                    <span className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm ${order.status === 'delivered' ? 'bg-green-100 text-green-700 ring-1 ring-green-200' :
+                                        order.status === 'shipped' ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-200' :
+                                            order.status === 'accepted' ? 'bg-indigo-100 text-indigo-700 ring-1 ring-indigo-200' :
+                                                order.status === 'cancelled' ? 'bg-red-100 text-red-700 ring-1 ring-red-200' :
+                                                    'bg-yellow-100 text-yellow-700 ring-1 ring-yellow-200'
+                                        }`}>
+                                        {order.status}
+                                    </span>
+                                    <p className="text-[10px] text-gray-400 font-mono bg-gray-100 px-2 py-1 rounded">#{order.orderId ? order.orderId.slice(0, 8) : order.id.slice(0, 8)}</p>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Tracking Info if Shipped */}
+                        {/* Tracking info */}
                         {order.status === 'shipped' && order.deliveryPartner && (
-                            <div className="px-5 py-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="px-4 md:px-5 py-4 bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
+                                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
                                         <TruckIcon className="h-5 w-5 text-white" />
                                     </div>
                                     <div>
@@ -128,24 +138,24 @@ const OrderHistory = () => {
                                         <p className="font-bold text-indigo-900 text-sm">{order.deliveryPartner}</p>
                                     </div>
                                 </div>
-                                <div className="sm:text-right">
+                                <div className="sm:text-right ml-12 sm:ml-0">
                                     <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Tracking ID</p>
-                                    <p className="font-mono font-bold text-indigo-900 text-sm">{order.awbId}</p>
+                                    <p className="font-mono font-bold text-indigo-900 text-sm break-all">{order.awbId}</p>
                                 </div>
                             </div>
                         )}
 
-                        {/* DELIVERY ADDRESS - ONE LINE */}
+                        {/* Delivery address */}
                         {order.shippingAddress && (
-                            <div className="px-5 py-3 bg-blue-50/40 border-b border-gray-100">
+                            <div className="px-4 md:px-5 py-3 bg-blue-50/40 border-b border-gray-100">
                                 <div className="flex items-start gap-2 text-sm">
                                     <MapPinIcon className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <p className="font-bold text-gray-500 uppercase text-[10px] tracking-wider mb-1">Delivery Address</p>
                                         <p className="text-gray-900 font-medium truncate">
-                                            {order.shippingAddress.fullName} · {order.shippingAddress.addressLine}, {order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}
-                                            {order.shippingAddress.phone && (
-                                                <span className="text-gray-600"> · 📞 {order.shippingAddress.phone}</span>
+                                            {order.shippingAddress?.fullName} · {order.shippingAddress?.addressLine || ''}, {order.shippingAddress?.city || ''}, {order.shippingAddress?.state || ''} - {order.shippingAddress?.pincode || 'N/A'}
+                                            {order.shippingAddress?.phone && (
+                                                <span className="text-gray-600 block sm:inline sm:ml-2"> · 📞 {order.shippingAddress?.phone}</span>
                                             )}
                                         </p>
                                     </div>
@@ -153,10 +163,10 @@ const OrderHistory = () => {
                             </div>
                         )}
 
-                        {/* PRODUCTS */}
-                        <div className="p-5">
+                        {/* Order items */}
+                        <div className="p-4 md:p-5">
                             <div className="space-y-4">
-                                {order.items.map((item, idx) => (
+                                {(order.items || []).map((item, idx) => (
                                     <div
                                         key={idx}
                                         className="flex gap-4 items-center p-3 rounded-xl hover:bg-gray-50 transition-colors group/item"
@@ -164,7 +174,7 @@ const OrderHistory = () => {
                                         <div className="relative">
                                             <img
                                                 src={getDirectImageUrl(item.image) || "https://placehold.co/100"}
-                                                className="w-20 h-20 object-cover rounded-lg bg-gray-100 ring-1 ring-gray-200 group-hover/item:ring-2 group-hover/item:ring-blue-300 transition-all"
+                                                className="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg bg-gray-100 ring-1 ring-gray-200 group-hover/item:ring-2 group-hover/item:ring-blue-300 transition-all"
                                                 alt={item.name}
                                             />
                                             <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center shadow-lg">
@@ -174,33 +184,67 @@ const OrderHistory = () => {
                                         <div className="flex-1 min-w-0">
                                             <Link
                                                 to={`/product/${item.productId}`}
-                                                className="font-bold text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 block"
+                                                className="font-bold text-gray-900 hover:text-blue-600 transition-colors line-clamp-2 block text-sm md:text-base"
                                             >
                                                 {item.name}
                                             </Link>
-                                            <div className="flex items-center gap-3 mt-1">
-                                                <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                                                <p className="text-xs md:text-sm text-gray-500">Qty: {item.quantity}</p>
                                                 <span className="text-gray-300">•</span>
-                                                <p className="text-sm font-bold text-gray-900">₹{item.price?.toLocaleString('en-IN')}</p>
+                                                <p className="text-xs md:text-sm font-bold text-gray-900">₹{item.price?.toLocaleString('en-IN')}</p>
                                                 <span className="text-gray-300">•</span>
-                                                <p className="text-sm font-bold text-blue-600">₹{(item.price * item.quantity)?.toLocaleString('en-IN')}</p>
+                                                <p className="text-xs md:text-sm font-bold text-blue-600">₹{(item.price * item.quantity)?.toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
-                            {/* ORDER TOTAL */}
+                            {/* Total amount */}
                             <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end">
                                 <div className="text-right">
                                     <p className="text-xs text-gray-500 uppercase tracking-wider font-bold mb-1">Order Total</p>
-                                    <p className="text-2xl font-black text-gray-900">₹{order.totalAmount?.toLocaleString('en-IN')}</p>
+                                    <p className="text-xl md:text-2xl font-black text-gray-900">₹{order.totalAmount?.toLocaleString('en-IN') || '0'}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center items-center mt-12 gap-2">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <div className="flex gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => setCurrentPage(page)}
+                                className={`w-10 h-10 rounded-lg font-bold text-sm flex items-center justify-center transition-all ${currentPage === page
+                                    ? "bg-blue-600 text-white shadow-lg shadow-blue-200"
+                                    : "bg-white text-gray-600 hover:bg-gray-100"
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

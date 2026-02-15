@@ -43,7 +43,7 @@ const Checkout = () => {
   const shippingCost = shippingMethod === "express" ? 150 : 0;
   const finalTotal = activeSubtotal + shippingCost;
 
-  // Coupon State
+  // Coupon state
   const [couponCode, setCouponCode] = useState("");
   const [isCouponApplied, setIsCouponApplied] = useState(false);
   const [discount, setDiscount] = useState(0);
@@ -54,7 +54,7 @@ const Checkout = () => {
     }
   }, [itemsToPurchase, navigate]);
 
-  // Pre-fill address from profile
+  // Pre-fill address
   useEffect(() => {
     if (!currentUser) return;
     const fetchUser = async () => {
@@ -82,7 +82,7 @@ const Checkout = () => {
       return;
     }
 
-    // Mock Coupon Logic - In real app, verify with backend
+    // Mock coupon logic
     if (couponCode.toUpperCase() === "WELCOME500") {
       setDiscount(500);
       setIsCouponApplied(true);
@@ -103,7 +103,7 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (!currentUser) return;
 
-    // 0. Validation
+    // Validation
     const requiredFields = ['fullName', 'phone', 'pincode', 'city', 'addressLine'];
     const missingFields = requiredFields.filter(field => !address[field]?.trim());
 
@@ -115,9 +115,9 @@ const Checkout = () => {
     setLoading(true);
 
     try {
-      // Use Transaction for Stock Update and Order Creation
+      // Transaction
       const orderRef = await runTransaction(db, async (transaction) => {
-        // STEP 1: Do ALL READS FIRST (Firestore transaction requirement)
+        // Step 1: Read
         const productSnapshots = [];
 
         for (const item of itemsToPurchase) {
@@ -137,7 +137,7 @@ const Checkout = () => {
           });
         }
 
-        // STEP 2: Validate stock for all products
+        // Step 2: Validate stock
         const validatedItems = [];
         const productUpdates = [];
 
@@ -163,7 +163,7 @@ const Checkout = () => {
           });
         }
 
-        // STEP 3: Now do ALL WRITES (after all reads are complete)
+        // Step 3: Write
         // Update stock for each product
         for (const update of productUpdates) {
           transaction.update(update.ref, {
@@ -171,7 +171,7 @@ const Checkout = () => {
           });
         }
 
-        // Prepare Order Data
+        // Order data
         const orderData = {
           userId: currentUser.uid,
           items: validatedItems,
@@ -187,11 +187,11 @@ const Checkout = () => {
           createdAt: serverTimestamp(),
         };
 
-        // Create Order Document
+        // Create order
         const newOrderRef = doc(collection(db, "orders"));
         transaction.set(newOrderRef, orderData);
 
-        // Add to User's Order History
+        // Update user history
         const userOrderRef = doc(collection(db, "users", currentUser.uid, "orders"));
         transaction.set(userOrderRef, {
           ...orderData,
@@ -201,12 +201,12 @@ const Checkout = () => {
         return newOrderRef;
       });
 
-      // 4. Clear Cart ONLY if it wasn't a buyNow purchase
+      // Clear cart
       if (!buyNowItem) {
         await clearCart();
       }
 
-      // 5. Success
+      // Success
       await new Promise(resolve => setTimeout(resolve, 800));
 
       toast.success("Order Placed Successfully!");
@@ -223,10 +223,10 @@ const Checkout = () => {
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        {/* LEFT COLUMN - FORMS */}
+        {/* Forms box */}
         <div className="lg:col-span-8 space-y-6">
 
-          {/* STEP 1: ADDRESS */}
+          {/* Address form */}
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">1</span>
@@ -270,7 +270,7 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* STEP 2: SHIPPING METHOD */}
+          {/* Shipping method */}
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">2</span>
@@ -311,7 +311,7 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* STEP 3: PAYMENT */}
+          {/* Payment method */}
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <span className="bg-black text-white w-8 h-8 flex items-center justify-center rounded-full text-sm">3</span>
@@ -335,11 +335,11 @@ const Checkout = () => {
 
         </div>
 
-        {/* RIGHT COLUMN - SUMMARY */}
+        {/* Order summary */}
         <div className="lg:col-span-4">
           <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
 
-            {/* Coupon Section */}
+            {/* Coupon */}
             <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2 text-sm uppercase">
                 <span className="text-blue-600">🎟️</span> Apply Coupon

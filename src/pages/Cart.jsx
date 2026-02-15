@@ -5,7 +5,6 @@ import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 import {
   TrashIcon,
-  TicketIcon,
   ArrowRightIcon,
   ShoppingBagIcon,
   ArrowLeftIcon,
@@ -34,7 +33,7 @@ const Cart = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [showClearCartModal, setShowClearCartModal] = useState(false);
 
-  /* -------------------- LOADING -------------------- */
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-gray-50">
@@ -46,12 +45,12 @@ const Cart = () => {
     );
   }
 
-  /* -------------------- EMPTY CART -------------------- */
+  // Empty cart check
   if (!loading && cartItems.length === 0) {
     return <EmptyCart />;
   }
 
-  /* -------------------- CALCULATIONS -------------------- */
+  // Cost calculations
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -63,11 +62,10 @@ const Cart = () => {
     ? (subtotal * appliedCoupon.discount) / 100
     : 0;
 
-  // The client requested NOT to show "Order Summary me final money" in cart.
-  // We keep the calculation for logic but will hide it in UI.
+  // Final total calculation
   const finalTotal = subtotal + shipping - couponDiscount;
 
-  /* -------------------- HANDLERS -------------------- */
+  // Event handlers
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code");
@@ -235,7 +233,7 @@ const Cart = () => {
   );
 };
 
-/* -------------------- SUB COMPONENTS (confirm delete)-------------------- */
+// Delete confirmation modal
 
 const DeleteConfirmationModal = ({ itemName, onConfirm, onCancel }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -296,7 +294,7 @@ const DeleteConfirmationModal = ({ itemName, onConfirm, onCancel }) => (
   </div>
 );
 
-/* -------------------- SUB COMPONENTS -------------------- */
+// Subcomponents
 
 const EmptyCart = () => (
   <div className="min-h-[calc(100vh-5rem)] flex flex-col items-center justify-center bg-white">

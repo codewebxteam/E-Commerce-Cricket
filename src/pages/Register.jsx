@@ -48,11 +48,11 @@ const Register = () => {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-black relative overflow-hidden flex items-center justify-center p-4 py-6">
-      {/* Animated Background Blobs */}
+      {/* Background blobs */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] -ml-48 -mt-48 animate-pulse" />
       <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] -mr-48 -mb-48 animate-pulse" style={{ animationDelay: "1s" }} />
 
-      {/* Background Pattern */}
+      {/* Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
           backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
@@ -61,7 +61,7 @@ const Register = () => {
       </div>
 
       <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Branding/Information */}
+        {/* Branding */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -98,7 +98,7 @@ const Register = () => {
           </div>
         </motion.div>
 
-        {/* Right Side - Registration Form */}
+        {/* Register form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -122,7 +122,7 @@ const Register = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Email Input */}
+              {/* Email */}
               <div className="space-y-2">
                 <label className="block text-xs font-black uppercase tracking-widest text-gray-400">
                   Email Address
@@ -140,7 +140,7 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Password Input */}
+              {/* Password */}
               <div className="space-y-2">
                 <label className="block text-xs font-black uppercase tracking-widest text-gray-400">
                   Password
@@ -158,7 +158,7 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Confirm Password Input */}
+              {/* Confirm password */}
               <div className="space-y-2">
                 <label className="block text-xs font-black uppercase tracking-widest text-gray-400">
                   Confirm Password
@@ -176,7 +176,7 @@ const Register = () => {
                 </div>
               </div>
 
-              {/* Password Strength Indicator */}
+              {/* Strength indicator */}
               {password && (
                 <div className="space-y-2">
                   <div className="flex gap-2">
@@ -202,7 +202,7 @@ const Register = () => {
                 </div>
               )}
 
-              {/* Submit Button */}
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}

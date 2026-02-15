@@ -21,7 +21,7 @@ import { db } from "../firebase/config";
 import { collection, query, limit, getDocs, where } from "firebase/firestore";
 import { getDirectImageUrl } from "../utils/imageUtils";
 
-/* ================= HERO SECTION ================= */
+// Hero
 const Hero = () => {
   const heroRef = useRef(null);
   const contentRef = useRef(null);
@@ -58,7 +58,7 @@ const Hero = () => {
             <span className="px-4 text-blue-400 text-xs font-black uppercase tracking-[0.2em]">New Season Collection</span>
           </motion.div>
 
-          <h1 className="text-6xl md:text-8xl font-black text-white mb-6 leading-[0.9] tracking-tighter">
+          <h1 className="text-5xl md:text-8xl font-black text-white mb-6 leading-[0.9] tracking-tighter">
             DOMINATE THE <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">PITCH.</span>
           </h1>
 
@@ -89,7 +89,7 @@ const Hero = () => {
   );
 };
 
-/* ================= PRODUCT CARD ================= */
+// Product card
 const ProductCard = ({ product }) => (
   <motion.div
     whileHover={{ y: -10 }}
@@ -141,7 +141,7 @@ const ProductCard = ({ product }) => (
   </motion.div>
 );
 
-/* ================= VOICE OF PLAYERS (REVIEWS) ================= */
+// Reviews
 const VoiceOfPlayers = () => {
   const reviews = [
     { name: "Arjun Sharma", role: "State Level Player", text: "The English Willow bat I bought from here has the perfect balance and ping. Simply outstanding gear.", rating: 5 },
@@ -191,7 +191,7 @@ const VoiceOfPlayers = () => {
   );
 };
 
-/* ================= ELITE FAQ ================= */
+// FAQ
 const EliteFAQ = () => {
   const [openIndex, setOpenIndex] = useState(0);
   const faqs = [
@@ -246,7 +246,7 @@ const EliteFAQ = () => {
   );
 };
 
-/* ================= MAIN HOME PAGE ================= */
+// Home page
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -316,7 +316,7 @@ const Home = () => {
     <div className="min-h-screen bg-white">
       <Hero />
 
-      {/* Trust Section */}
+      {/* Features */}
       <section className="py-20 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -339,7 +339,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Categories Grid */}
+      {/* Categories */}
       <section className="py-24 bg-gray-50/50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
@@ -374,7 +374,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products */}
+      {/* Featured products */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-20">
@@ -402,7 +402,7 @@ const Home = () => {
       <VoiceOfPlayers />
       <EliteFAQ />
 
-      {/* Community Section */}
+      {/* Community */}
       <section className="bg-black py-24 overflow-hidden relative">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[100px] -mr-64 -mt-64" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[100px] -ml-64 -mb-64" />
