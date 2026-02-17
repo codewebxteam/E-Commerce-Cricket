@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 import { CartProvider } from "./context/CartContext";
@@ -8,20 +7,29 @@ import { WishlistProvider } from "./context/WishlistContext";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import Trophies from "./pages/Trophies";
-import ProductDetail from "./pages/ProductDetail";
-import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Wishlist from "./pages/Wishlist";
-import Checkout from "./pages/Checkout";
-import OrderSuccess from "./pages/OrderSuccess";
-import OrderHistory from "./pages/OrderHistory";
-import Profile from "./pages/Profile";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
+// Public Pages
+import Home from "./pages/public/Home";
+import About from "./pages/public/About";
+import Contact from "./pages/public/Contact";
+
+// Auth Pages
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+
+// Shop Pages
+import Products from "./pages/shop/Products";
+import Trophies from "./pages/shop/Trophies";
+import ProductDetail from "./pages/shop/ProductDetail";
+
+// User Pages
+import Cart from "./pages/user/Cart";
+import Wishlist from "./pages/user/Wishlist";
+import Checkout from "./pages/user/Checkout";
+import OrderSuccess from "./pages/user/OrderSuccess";
+import OrderHistory from "./pages/user/OrderHistory";
+import Profile from "./pages/user/Profile";
+
+// Admin Pages
 import AdminDashboard from "./pages/admin/Dashboard";
 import AdminUserProfile from "./pages/admin/AdminUserProfile";
 

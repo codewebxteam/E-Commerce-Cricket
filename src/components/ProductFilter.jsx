@@ -1,4 +1,3 @@
-import React from "react";
 import { StarIcon } from "@heroicons/react/24/solid";
 
 const ProductFilter = ({
@@ -176,11 +175,10 @@ const ProductFilter = ({
               {[...Array(5)].map((_, i) => (
                 <StarIcon
                   key={i}
-                  className={`h-4 w-4 ${
-                    i < rating
+                  className={`h-4 w-4 ${i < rating
                       ? "text-yellow-400"
                       : "text-gray-300"
-                  }`}
+                    }`}
                 />
               ))}
               <span className="ml-2 text-sm text-gray-600">

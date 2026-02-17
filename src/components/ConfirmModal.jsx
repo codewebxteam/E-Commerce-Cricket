@@ -1,4 +1,4 @@
-import React from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Trash2, UserCheck, Package } from "lucide-react";
 

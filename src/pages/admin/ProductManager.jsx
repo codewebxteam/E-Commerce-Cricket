@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   addDoc,
   collection,
@@ -40,6 +40,7 @@ const CATEGORIES = [
 const ProductManager = () => {
   const [products, setProducts] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [form, setForm] = useState({
     name: "",
     subtitle: "",
@@ -173,11 +174,13 @@ const ProductManager = () => {
 
     if (editingId) {
       await updateDoc(doc(db, "products", editingId), productData);
+      toast.success("Product updated successfully!");
     } else {
       await addDoc(collection(db, "products"), {
         ...productData,
         createdAt: serverTimestamp(),
       });
+      toast.success("Product added successfully!");
     }
 
     resetForm();
@@ -420,10 +423,12 @@ const ProductManager = () => {
                   multiple
                   accept="image/*"
                   onChange={async (e) => {
+                    e.stopPropagation(); // Prevent form submission
                     const files = Array.from(e.target.files);
                     if (!files.length) return;
 
-                    const uploadToast = toast.loading(`Uploading ${files.length} image(s) to Cloudinary...`);
+                    setIsUploading(true);
+                    const uploadToast = toast.loading(`Uploading ${files.length} image(s)...`);
 
                     try {
                       const newImages = [...form.images.filter(Boolean)];
@@ -437,28 +442,35 @@ const ProductManager = () => {
                           });
                           newImages.push(imageUrl);
                           successCount++;
+
+                          // Update progress toast
+                          toast.loading(`Uploaded ${successCount}/${files.length} images...`, { id: uploadToast });
                         } catch (fileError) {
                           console.error(`Error uploading ${file.name}:`, fileError);
-                          toast.error(`Failed to upload ${file.name}`);
+                          toast.error(`Failed to upload ${file.name}`, { duration: 3000 });
                         }
                       }
 
                       setForm({ ...form, images: newImages });
-                      toast.success(`${successCount} image(s) uploaded successfully`, { id: uploadToast });
+                      toast.success(`${successCount} image(s) uploaded successfully!`, { id: uploadToast });
 
                     } catch (error) {
                       console.error("General upload error:", error);
                       toast.error("Error processing uploads", { id: uploadToast });
+                    } finally {
+                      setIsUploading(false);
+                      // Reset the input so the same file can be uploaded again if needed
+                      e.target.value = '';
                     }
-
-                    // Reset the input so the same file can be uploaded again if needed
-                    e.target.value = '';
                   }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={isUploading}
                 />
                 <div className="flex flex-col items-center justify-center pointer-events-none">
-                  <FaPlus className="text-3xl text-indigo-300 mb-2" />
-                  <p className="text-sm font-bold text-gray-900">Click to Upload</p>
+                  <FaPlus className={`text-3xl mb-2 ${isUploading ? 'text-gray-300 animate-pulse' : 'text-indigo-300'}`} />
+                  <p className="text-sm font-bold text-gray-900">
+                    {isUploading ? 'Uploading...' : 'Click to Upload'}
+                  </p>
                   <p className="text-xs text-gray-500">JPG, PNG, WebP supported</p>
                 </div>
               </div>
@@ -477,8 +489,12 @@ const ProductManager = () => {
                 Cancel
               </button>
             )}
-            <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2">
-              <FaSave /> {editingId ? "Update Product" : "Save Product"}
+            <button
+              type="submit"
+              disabled={isUploading}
+              className={`flex-1 ${isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'} text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-200 transition-transform active:scale-95 flex items-center justify-center gap-2`}
+            >
+              <FaSave /> {isUploading ? 'Uploading Images...' : editingId ? "Update Product" : "Save Product"}
             </button>
           </div>
         </div>
