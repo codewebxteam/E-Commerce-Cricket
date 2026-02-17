@@ -76,27 +76,33 @@ const Checkout = () => {
     fetchUser();
   }, [currentUser]);
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       toast.error("Please enter a coupon code");
       return;
     }
 
-    // Mock coupon logic
-    if (couponCode.toUpperCase() === "WELCOME500") {
-      setDiscount(500);
-      setIsCouponApplied(true);
-      toast.success("Coupon WELCOME500 applied!");
-    } else if (couponCode.toUpperCase() === "CRICKET10") {
-      // Calculate 10% of subtotal
-      const disc = Math.round(activeSubtotal * 0.1);
-      setDiscount(disc);
-      setIsCouponApplied(true);
-      toast.success("10% Discount Applied!");
-    } else {
-      toast.error("Invalid Coupon Code");
-      setDiscount(0);
-      setIsCouponApplied(false);
+    try {
+      const q = query(
+        collection(db, "coupons"),
+        where("code", "==", couponCode.toUpperCase())
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const coupon = querySnapshot.docs[0].data();
+        const disc = Math.round((activeSubtotal * (coupon.discount || 0)) / 100);
+        setDiscount(disc);
+        setIsCouponApplied(true);
+        toast.success(`Coupon ${coupon.code} applied!`);
+      } else {
+        toast.error("Invalid coupon code");
+        setIsCouponApplied(false);
+        setDiscount(0);
+      }
+    } catch (e) {
+      console.error("Coupon error:", e);
+      toast.error("Failed to apply coupon");
     }
   };
 

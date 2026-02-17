@@ -6,6 +6,7 @@ import {
   doc,
   getDocs,
   updateDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../firebase/config";
 import {
@@ -167,7 +168,7 @@ const ProductManager = () => {
       inStock: Number(form.stock) > 0,
       highlights: highlightsArray,
       specs: specsObject,
-      updatedAt: new Date(),
+      updatedAt: serverTimestamp(),
     };
 
     if (editingId) {
@@ -175,7 +176,7 @@ const ProductManager = () => {
     } else {
       await addDoc(collection(db, "products"), {
         ...productData,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
     }
 

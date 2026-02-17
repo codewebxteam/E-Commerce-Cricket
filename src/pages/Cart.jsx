@@ -56,15 +56,6 @@ const Cart = () => {
     0
   );
 
-  // Free shipping over 5000 (Example logic)
-  const shipping = subtotal > 5000 ? 0 : 150;
-  const couponDiscount = appliedCoupon
-    ? (subtotal * appliedCoupon.discount) / 100
-    : 0;
-
-  // Final total calculation
-  const finalTotal = subtotal + shipping - couponDiscount;
-
   // Event handlers
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
